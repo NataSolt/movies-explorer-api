@@ -8,7 +8,7 @@ const app = express();
 
 // подключаемся к серверу mongo
 mongoose
-  .connect('mongodb://localhost:27017/mestodb', {
+  .connect('mongodb://localhost:27017/moviesdb', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     family: 4,
