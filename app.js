@@ -3,19 +3,18 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
 const cors = require('cors');
-const { login, createUser } = require('./controllers/users');
-const auth = require('./middlewares/auth');
-const { validateLogin, validateCreateUser } = require('./middlewares/validator');
+// const { login, createUser } = require('./controllers/users');
+const helmet = require('helmet');
+const routes = require('./routes/index');
+// const { validateLogin, validateCreateUser } = require('./middlewares/validator');
 const NotFound = require('./errors/notfound');
 // const routes = require('./routes/index');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-
-// Слушаем 3000 порт
-const { PORT = 3000 } = process.env;
+const { PORT, MONGO } = require('./utils/config');
 
 // подключаемся к серверу mongo
 mongoose
-  .connect('mongodb://localhost:27017/moviesdb', {
+  .connect(MONGO, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     family: 4,
@@ -27,13 +26,15 @@ app.use(requestLogger); // подключаем логгер запросов
 
 app.use(cors());
 
+app.use(helmet());
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post('/signin', validateLogin, login);
-app.post('/signup', validateCreateUser, createUser);
+// app.post('/signin', validateLogin, login);
+// app.post('/signup', validateCreateUser, createUser);
 
-app.use('/users', auth, require('./routes/users'));
+app.use(routes);
 
 // app.use(routes);
 app.use((req, res, next) => {

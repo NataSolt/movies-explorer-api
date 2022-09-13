@@ -1,3 +1,4 @@
+require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -12,7 +13,7 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 module.exports.getUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
-      res.status(200).send({ data: user });
+      res.status(200).send(user);
     })
     .catch(next);
 };
@@ -20,10 +21,10 @@ module.exports.getUser = (req, res, next) => {
 // ссоздаем юзера
 module.exports.createUser = (req, res, next) => {
   const {
-    name, email,
+    name, email, password,
   } = req.body;
   bcrypt
-    .hash(req.body.password, 10)
+    .hash(password, 10)
     .then((hash) => User.create({
       name, email, password: hash,
     }))
