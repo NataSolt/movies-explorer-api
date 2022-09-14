@@ -3,6 +3,15 @@ const BadRequest = require('../errors/badrequest');
 const Forbidden = require('../errors/forbidden');
 const NotFound = require('../errors/notfound');
 const { CREATED } = require('../utils/statusError');
+const {
+  MOVIE_NOT_FOUND,
+  MOVIE_INVALID_DATA,
+  MOVIE_FORBIDDEN_DELETE,
+  UNAUTHORIZED,
+  VALIDATION_ERROR,
+  CAST_ERROR,
+  SUCCESS,
+} = require('../utils/messageError');
 
 // получаем фильмы
 module.exports.getMovies = (req, res, next) => {
@@ -44,8 +53,8 @@ module.exports.saveMovie = (req, res, next) => {
   })
     .then((movies) => res.status(CREATED).send(movies))
     .catch((error) => {
-      if (error.name === 'ValidationError') {
-        next(new BadRequest('Некорректные данные'));
+      if (error.name === VALIDATION_ERROR) {
+        next(new BadRequest(MOVIE_INVALID_DATA));
         return;
       }
       next(error);
@@ -58,17 +67,17 @@ module.exports.deleteMovie = (req, res, next) => {
   Card.findById(movieId)
     .then((movie) => {
       if (!movie) {
-        throw new NotFound('Карточка с указанным _id не найдена');
+        throw new NotFound(MOVIE_NOT_FOUND);
       }
       if (JSON.stringify(movie.owner) !== JSON.stringify(req.user._id)) {
-        throw new Forbidden('Нельзя удалить эту карточку');
+        throw new Forbidden(MOVIE_FORBIDDEN_DELETE);
       }
       return Card.remove(movie);
     })
-    .then(() => res.status(200).send({ message: 'Карточка успешно удалена' }))
+    .then(() => res.status(200).send({ message: SUCCESS }))
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequest('Невалидный id'));
+      if (err.name === CAST_ERROR) {
+        next(new BadRequest(UNAUTHORIZED));
         return;
       }
       next(err);

@@ -3,9 +3,16 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const BadRequest = require('../errors/badrequest');
-// const NotFound = require('../errors/notfound');
+const NotFound = require('../errors/notfound');
 const Conflict = require('../errors/conflict');
 const { CREATED } = require('../utils/statusError');
+const {
+  USER_NOT_FOUND,
+  USER_CONFLICT_ERROR,
+  USER_INVALID_DATA,
+  USER_INVALID_UPDATEDATA,
+  VALIDATION_ERROR,
+} = require('../utils/messageError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -13,6 +20,9 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 module.exports.getUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
+      if (!user) {
+        throw new NotFound(USER_NOT_FOUND);
+      }
       res.status(200).send(user);
     })
     .catch(next);
@@ -36,12 +46,12 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        next(new Conflict('Пользователь с таким email уже существует'));
+        next(new Conflict(USER_CONFLICT_ERROR));
         return;
       }
 
-      if (err.name === 'ValidationError') {
-        next(new BadRequest('Некорректные данные'));
+      if (err.name === VALIDATION_ERROR) {
+        next(new BadRequest(USER_INVALID_DATA));
         return;
       }
 
@@ -57,8 +67,8 @@ module.exports.patchUser = (req, res, next) => {
       res.status(200).send(data);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequest('Некорректные данные'));
+      if (err.name === VALIDATION_ERROR) {
+        next(new BadRequest(USER_INVALID_UPDATEDATA));
         return;
       }
       next(err);
