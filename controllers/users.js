@@ -1,4 +1,3 @@
-require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -13,6 +12,7 @@ const {
   USER_INVALID_UPDATEDATA,
   VALIDATION_ERROR,
 } = require('../utils/messageError');
+const { JWT_PRODUCTION_KEY } = require('../utils/config');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -23,7 +23,7 @@ module.exports.getUser = (req, res, next) => {
       if (!user) {
         throw new NotFound(USER_NOT_FOUND);
       }
-      res.status(200).send(user);
+      res.send(user);
     })
     .catch(next);
 };
@@ -45,13 +45,13 @@ module.exports.createUser = (req, res, next) => {
       });
     })
     .catch((err) => {
-      if (err.code === 11000) {
-        next(new Conflict(USER_CONFLICT_ERROR));
+      if (err.name === VALIDATION_ERROR) {
+        next(new BadRequest(USER_INVALID_DATA));
         return;
       }
 
-      if (err.name === VALIDATION_ERROR) {
-        next(new BadRequest(USER_INVALID_DATA));
+      if (err.code === 11000) {
+        next(new Conflict(USER_CONFLICT_ERROR));
         return;
       }
 
@@ -64,11 +64,16 @@ module.exports.patchUser = (req, res, next) => {
   const { name, email } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, email }, { runValidators: true, new: true })
     .then((data) => {
-      res.status(200).send(data);
+      res.send(data);
     })
     .catch((err) => {
       if (err.name === VALIDATION_ERROR) {
         next(new BadRequest(USER_INVALID_UPDATEDATA));
+        return;
+      }
+
+      if (err.code === 11000) {
+        next(new Conflict(USER_CONFLICT_ERROR));
         return;
       }
       next(err);
@@ -80,10 +85,10 @@ module.exports.login = (req, res, next) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'secret', {
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : JWT_PRODUCTION_KEY, {
         expiresIn: '7d',
       });
-      res.status(200).send({ token });
+      res.send({ token });
     })
     .catch(next);
 };

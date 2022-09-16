@@ -4,7 +4,8 @@ const {
   NODE_ENV,
   JWT_SECRET,
 } = process.env;
+const JWT_PRODUCTION_KEY = 'dev-secret';
 
 module.exports = {
-  NODE_ENV, PORT, JWT_SECRET, MONGO,
+  NODE_ENV, PORT, JWT_SECRET, MONGO, JWT_PRODUCTION_KEY,
 };

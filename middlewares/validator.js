@@ -1,5 +1,5 @@
-/* eslint-disable prefer-regex-literals */
 const { celebrate, Joi } = require('celebrate');
+const { regexpUrl } = require('../utils/regexpUrl');
 
 module.exports.validateLogin = celebrate({
   body: Joi.object().keys({
@@ -31,11 +31,11 @@ module.exports.validateSaveMovie = celebrate({
     year: Joi.string().required(),
     description: Joi.string().required(),
     image: Joi.string().required()
-      .pattern(new RegExp(/^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*/)),
+      .pattern(regexpUrl),
     trailerLink: Joi.string().required()
-      .pattern(new RegExp(/^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*/)),
+      .pattern(regexpUrl),
     thumbnail: Joi.string().required()
-      .pattern(new RegExp(/^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*/)),
+      .pattern(regexpUrl),
     movieId: Joi.number().required(),
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),

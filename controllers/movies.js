@@ -74,7 +74,7 @@ module.exports.deleteMovie = (req, res, next) => {
       }
       return Card.remove(movie);
     })
-    .then(() => res.status(200).send({ message: SUCCESS }))
+    .then(() => res.send({ message: SUCCESS }))
     .catch((err) => {
       if (err.name === CAST_ERROR) {
         next(new BadRequest(UNAUTHORIZED));
